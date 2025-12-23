@@ -41,6 +41,17 @@ app.get("/api/health", (req, res) =>
   res.json({ status: "OK", timestamp: new Date().toISOString() }),
 );
 
+// Root route handler (for Render health checks)
+app.get("/", (req, res) =>
+  res.json({
+    message: "Han Store API",
+    status: "OK",
+    timestamp: new Date().toISOString(),
+  }),
+);
+
+app.head("/", (req, res) => res.status(200).end());
+
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
