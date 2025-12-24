@@ -52,6 +52,13 @@ app.get("/", (req, res) =>
 
 app.head("/", (req, res) => res.status(200).end());
 
+// Healthcheck endpoint for Cron-job.org (lightweight ping)
+app.get("/healthcheck", (req, res) => {
+  res.status(200).send("Server is alive!");
+});
+
+app.head("/healthcheck", (req, res) => res.status(200).end());
+
 // API routes
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
