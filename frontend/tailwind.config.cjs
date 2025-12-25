@@ -3,6 +3,9 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ["Poppins", "system-ui", "-apple-system", "sans-serif"],
+      },
       colors: {
         primary: {
           DEFAULT: "#111827",
