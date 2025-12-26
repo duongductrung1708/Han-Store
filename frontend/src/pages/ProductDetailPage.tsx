@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../app/hooks";
 import { fetchProductDetail, Product } from "../features/products/productSlice";
@@ -36,6 +36,8 @@ const ProductDetailPage = () => {
   const [reviewComment, setReviewComment] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [showExpandButton, setShowExpandButton] = useState(false);
+  const descriptionRef = useRef<HTMLDivElement>(null);
   const [canReview, setCanReview] = useState(false);
   const [checkingCanReview, setCheckingCanReview] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -124,7 +126,18 @@ const ProductDetailPage = () => {
         fetchRelated();
       })
       .catch(() => setLoading(false));
-  }, [dispatch, idOrSlug]);
+  }, [dispatch, idOrSlug, user]);
+
+  // Check if description needs expand/collapse button
+  useEffect(() => {
+    if (product?.description && descriptionRef.current) {
+      const element = descriptionRef.current;
+      // Check if content height exceeds 6 lines (approximately 144px)
+      const lineHeight = 24; // prose-sm line height
+      const maxHeight = lineHeight * 6;
+      setShowExpandButton(element.scrollHeight > maxHeight);
+    }
+  }, [product?.description]);
 
   const handleAddToCart = async () => {
     if (!product || !user) {
@@ -469,27 +482,61 @@ const ProductDetailPage = () => {
           {/* Description */}
           {product.description && (
             <div className="mb-8">
-              <h2 className="mb-2 text-lg font-semibold">Mô tả sản phẩm</h2>
+              <h2 className="mb-4 text-xl font-semibold text-slate-900">
+                Mô tả sản phẩm
+              </h2>
               <div className="relative">
                 <div
-                  className={`prose prose-sm max-w-none text-slate-700 transition-all ${
-                    !descriptionExpanded ? "line-clamp-6" : ""
+                  ref={descriptionRef}
+                  className={`prose prose-sm max-w-none text-slate-700 transition-all duration-300 ${
+                    !descriptionExpanded && showExpandButton
+                      ? "line-clamp-6 overflow-hidden"
+                      : ""
                   }`}
+                  style={{
+                    wordBreak: "break-word",
+                  }}
                   dangerouslySetInnerHTML={{ __html: product.description }}
                 />
-                {/* Check if content is long enough to need expand/collapse */}
-                {product.description.length > 500 && (
+                {/* Expand/Collapse button */}
+                {showExpandButton && (
                   <button
                     onClick={() => setDescriptionExpanded(!descriptionExpanded)}
-                    className="mt-2 text-sm font-medium text-accent hover:underline"
+                    className="mt-4 flex items-center gap-2 text-sm font-medium text-accent hover:text-orange-600 transition-colors"
                   >
                     {descriptionExpanded ? (
                       <>
-                        <span className="mr-1">-</span> Rút gọn nội dung
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M5 15l7-7 7 7"
+                          />
+                        </svg>
+                        Thu gọn
                       </>
                     ) : (
                       <>
-                        <span className="mr-1">+</span> Xem thêm nội dung
+                        <svg
+                          className="h-4 w-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M19 9l-7 7-7-7"
+                          />
+                        </svg>
+                        Xem thêm
                       </>
                     )}
                   </button>

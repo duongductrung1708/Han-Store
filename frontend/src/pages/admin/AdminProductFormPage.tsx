@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { axiosClient } from "../../lib/axiosClient";
 import { useToast } from "../../contexts/ToastContext";
 import { ArrowLeftIcon, TrashIcon } from "@heroicons/react/24/outline";
+import RichTextEditor from "../../components/ui/RichTextEditor";
 
 interface Category {
   _id: string;
@@ -311,14 +312,12 @@ const AdminProductFormPage = () => {
                   <label className="mb-1 block text-sm font-medium text-slate-700">
                     Mô tả
                   </label>
-                  <textarea
+                  <RichTextEditor
                     value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
+                    onChange={(value) =>
+                      setFormData({ ...formData, description: value })
                     }
-                    rows={6}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-black focus:ring-2 focus:ring-black/20 focus:outline-none"
-                    placeholder="Nhập mô tả sản phẩm (có thể dùng HTML)"
+                    placeholder="Nhập mô tả sản phẩm..."
                   />
                 </div>
               </div>
