@@ -23,11 +23,14 @@ const sendAuthResponse = (res, user, message) => {
   user.refreshToken = refreshToken;
   user.save({ validateBeforeSave: false });
 
+  // Cookie options for cross-domain support
+  const isProduction = process.env.NODE_ENV === "production";
   const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    secure: isProduction, // HTTPS required in production
+    sameSite: isProduction ? "none" : "lax", // "none" allows cross-domain cookies
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: "/",
   };
 
   res

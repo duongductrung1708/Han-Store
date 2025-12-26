@@ -1,7 +1,15 @@
 import axios from "axios";
 
-const baseURL =
-  import.meta.env.VITE_API_BASE_URL || window.location.origin || "";
+// Get base URL from environment variable
+// In production, VITE_API_BASE_URL must be set to your Render backend URL
+const baseURL = import.meta.env.VITE_API_BASE_URL || 
+  (import.meta.env.DEV ? "http://localhost:5000" : "");
+
+if (!baseURL && import.meta.env.PROD) {
+  console.error(
+    "VITE_API_BASE_URL is not set! Please set it in your Vercel environment variables."
+  );
+}
 
 export const axiosClient = axios.create({
   baseURL,
