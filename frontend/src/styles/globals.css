@@ -76,6 +76,15 @@ html {
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes slideInFromBottom {
   from {
     opacity: 0;
@@ -95,6 +104,24 @@ html {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromRightOnly {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
   }
 }
 
@@ -152,6 +179,207 @@ html {
 
 .scale-in {
   animation: scaleIn 0.3s ease-out;
+}
+
+/* Filter Drawer Animations */
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.filter-drawer-enter {
+  animation: slideInFromRightOnly 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-drawer-exit {
+  animation: slideOutToRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.filter-backdrop-enter {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.filter-backdrop-exit {
+  animation: fadeOut 0.3s ease-out;
+}
+
+.filter-item {
+  animation: slideUpFade 0.4s ease-out backwards;
+}
+
+.filter-item:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.filter-item:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+.filter-item:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+.filter-item:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+.filter-item:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+.filter-item:nth-child(6) {
+  animation-delay: 0.3s;
+}
+
+.filter-button-bounce:active {
+  animation: bounce 0.3s ease-out;
+}
+
+/* Mobile Menu Animations */
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToLeft {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+.mobile-menu-backdrop {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.mobile-menu-drawer {
+  animation: slideInFromLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-menu-logo {
+  animation: slideUpFade 0.4s ease-out 0.1s backwards;
+}
+
+.mobile-menu-item {
+  animation: slideUpFade 0.4s ease-out backwards;
+  opacity: 0;
+}
+
+.mobile-menu-item:nth-child(1) {
+  animation-delay: 0.1s;
+  animation-fill-mode: forwards;
+}
+
+.mobile-menu-item:nth-child(2) {
+  animation-delay: 0.15s;
+  animation-fill-mode: forwards;
+}
+
+.mobile-menu-item:nth-child(3) {
+  animation-delay: 0.2s;
+  animation-fill-mode: forwards;
+}
+
+.mobile-menu-item:nth-child(4) {
+  animation-delay: 0.25s;
+  animation-fill-mode: forwards;
+}
+
+.mobile-menu-item:nth-child(5) {
+  animation-delay: 0.3s;
+  animation-fill-mode: forwards;
+}
+
+.mobile-menu-item:nth-child(6) {
+  animation-delay: 0.35s;
+  animation-fill-mode: forwards;
+}
+
+.mobile-menu-item:nth-child(7) {
+  animation-delay: 0.4s;
+  animation-fill-mode: forwards;
+}
+
+.mobile-menu-item:nth-child(8) {
+  animation-delay: 0.45s;
+  animation-fill-mode: forwards;
+}
+
+.mobile-menu-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.mobile-menu-button::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(249, 115, 22, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+
+.mobile-menu-button:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Scroll to Top Button Animation */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  50% {
+    transform: translateY(-5px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(249, 115, 22, 0);
+  }
+}
+
+.scroll-to-top-button {
+  animation: bounceIn 0.5s ease-out;
+}
+
+.scroll-to-top-button:hover {
+  animation: pulse 2s infinite;
 }
 
 

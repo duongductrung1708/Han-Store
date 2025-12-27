@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import { upsertCartItem } from "../../features/cart/cartSlice";
@@ -138,6 +138,8 @@ const ProductCard = ({ product }: ProductCardProps) => {
               <img
                 src={product.images[0].url}
                 alt={product.name}
+                loading="lazy"
+                decoding="async"
                 className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
               />
             ) : (
@@ -260,5 +262,6 @@ const ProductCard = ({ product }: ProductCardProps) => {
   );
 };
 
-export default ProductCard;
+// Memoize component to prevent unnecessary re-renders
+export default memo(ProductCard);
 

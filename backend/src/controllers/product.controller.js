@@ -26,20 +26,174 @@ export const listProducts = async (req, res, next) => {
       query.categories = category;
     }
 
+    // Build aggregation pipeline for price filtering with salePrice support
+    let aggregationPipeline = [];
+
+    // Match stage for basic filters
+    const matchStage = { ...query };
+
     if (minPrice || maxPrice) {
-      query.price = {};
-      if (minPrice) query.price.$gte = Number(minPrice);
-      if (maxPrice) query.price.$lte = Number(maxPrice);
+      // Use aggregation to filter by effective price (salePrice || price)
+      aggregationPipeline.push({ $match: matchStage });
+
+      // Add field to calculate effective price
+      aggregationPipeline.push({
+        $addFields: {
+          effectivePrice: {
+            $cond: {
+              if: { $and: [{ $ne: ["$salePrice", null] }, { $gt: ["$salePrice", 0] }] },
+              then: "$salePrice",
+              else: "$price",
+            },
+          },
+        },
+      });
+
+      // Filter by effective price
+      const priceFilter = {};
+      if (minPrice) priceFilter.effectivePrice = { $gte: Number(minPrice) };
+      if (maxPrice) {
+        priceFilter.effectivePrice = priceFilter.effectivePrice || {};
+        priceFilter.effectivePrice.$lte = Number(maxPrice);
+      }
+      aggregationPipeline.push({ $match: priceFilter });
+
+      // Sort, skip, limit
+      // If sorting by price, use effectivePrice instead
+      const sortField = sort === "price" ? "effectivePrice" : sort;
+      const sortOption = { [sortField]: order === "asc" ? 1 : -1 };
+      aggregationPipeline.push({ $sort: sortOption });
+      aggregationPipeline.push({ $skip: (page - 1) * limit });
+      aggregationPipeline.push({ $limit: Number(limit) });
+
+      // Populate categories
+      aggregationPipeline.push({
+        $lookup: {
+          from: "categories",
+          localField: "categories",
+          foreignField: "_id",
+          as: "categories",
+        },
+      });
+
+      // Select only needed fields and remove effectivePrice
+      aggregationPipeline.push({
+        $project: {
+          effectivePrice: 0,
+          description: 0, // Don't need description in list view
+          __v: 0,
+        },
+      });
+
+      // Count total with same price filter
+      const countPipeline = [
+        { $match: matchStage },
+        {
+          $addFields: {
+            effectivePrice: {
+              $cond: {
+                if: { $and: [{ $ne: ["$salePrice", null] }, { $gt: ["$salePrice", 0] }] },
+                then: "$salePrice",
+                else: "$price",
+              },
+            },
+          },
+        },
+        { $match: priceFilter },
+        { $count: "total" },
+      ];
+
+      const [itemsResult, countResult] = await Promise.all([
+        Product.aggregate(aggregationPipeline),
+        Product.aggregate(countPipeline),
+      ]);
+
+      const items = itemsResult;
+      const total = countResult[0]?.total || 0;
+
+      res.json({
+        success: true,
+        data: items,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+      return;
     }
 
+    // If no price filter but sorting by price, use aggregation to sort by effectivePrice
+    if (sort === "price") {
+      const aggregationPipeline = [
+        { $match: query },
+        {
+          $addFields: {
+            effectivePrice: {
+              $cond: {
+                if: { $and: [{ $ne: ["$salePrice", null] }, { $gt: ["$salePrice", 0] }] },
+                then: "$salePrice",
+                else: "$price",
+              },
+            },
+          },
+        },
+        { $sort: { effectivePrice: order === "asc" ? 1 : -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: Number(limit) },
+        {
+          $lookup: {
+            from: "categories",
+            localField: "categories",
+            foreignField: "_id",
+            as: "categories",
+          },
+        },
+        {
+          $project: {
+            effectivePrice: 0,
+          },
+        },
+      ];
+
+      const countPipeline = [{ $match: query }, { $count: "total" }];
+
+      const [itemsResult, countResult] = await Promise.all([
+        Product.aggregate(aggregationPipeline),
+        Product.aggregate(countPipeline),
+      ]);
+
+      const items = itemsResult;
+      const total = countResult[0]?.total || 0;
+
+      res.json({
+        success: true,
+        data: items,
+        pagination: {
+          page: Number(page),
+          limit: Number(limit),
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      });
+      return;
+    }
+
+    // If no price filter and not sorting by price, use normal query
+    // Select only needed fields for better performance
     const sortOption = { [sort]: order === "asc" ? 1 : -1 };
 
     const [items, total] = await Promise.all([
       Product.find(query)
-        .populate("categories")
+        .select(
+          "name slug price salePrice images categories tags totalStock averageRating totalReviews variants",
+        )
+        .populate("categories", "name slug")
         .sort(sortOption)
         .skip((page - 1) * limit)
-        .limit(Number(limit)),
+        .limit(Number(limit))
+        .lean(), // Use lean() for better performance (returns plain JS objects)
       Product.countDocuments(query),
     ]);
 

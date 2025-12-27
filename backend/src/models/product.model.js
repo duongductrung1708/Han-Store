@@ -41,6 +41,14 @@ const productSchema = new mongoose.Schema(
 productSchema.index({ name: "text" });
 // Index for tags array (for filtering)
 productSchema.index({ tags: 1 });
+// Index for common query patterns
+productSchema.index({ isDeleted: 1, isActive: 1 });
+productSchema.index({ categories: 1, isDeleted: 1, isActive: 1 });
+productSchema.index({ price: 1, isDeleted: 1, isActive: 1 });
+productSchema.index({ salePrice: 1, isDeleted: 1, isActive: 1 });
+productSchema.index({ createdAt: -1, isDeleted: 1, isActive: 1 });
+// Compound index for price filtering
+productSchema.index({ isDeleted: 1, isActive: 1, price: 1, salePrice: 1 });
 // Note: slug field already has unique: true which creates an index automatically
 
 export const Product = mongoose.model("Product", productSchema);
